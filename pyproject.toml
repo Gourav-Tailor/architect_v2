@@ -1,0 +1,26 @@
+[project]
+name = "architect-v2"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Gourav-Tailor", email = "gauravmanishtailor0@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "channels>=4.3.2",
+    "django>=6.1.1",
+    "django-cors-headers>=4.9.0",
+    "django-environ>=0.14.0",
+    "djangorestframework>=3.18.1",
+    "gunicorn>=26.2.0",
+    "psycopg2-binary>=2.9.13",
+    "redis>=8.1.0",
+]
+
+[project.scripts]
+architect-v2 = "architect_v2:main"
+
+[build-system]
+requires = ["uv_build>=0.12.18,<0.13.0"]
+build-backend = "uv_build"

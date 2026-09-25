@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Architect 2.0{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-gray-100 flex h-screen overflow-hidden">
+
+    <!-- Global Sidebar -->
+    <aside class="w-64 bg-gray-900 border-r border-gray-800 flex flex-col justify-between p-4 flex-shrink-0">
+        <div class="space-y-6">
+            <!-- Org Switcher -->
+            <div class="flex items-center space-x-3 pb-4 border-b border-gray-800">
+                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/30">A</div>
+                <div>
+                    <h2 class="text-sm font-semibold">Gourav's Org</h2>
+                    <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded">Pro Tier</span>
+                </div>
+            </div>
+
+            <!-- Primary Navigation -->
+            <nav class="space-y-1 text-sm">
+                <a href="/" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
+                    <span>🏠</span> <span>Dashboard</span>
+                </a>
+                <a href="/agent-studio/" class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-800 text-indigo-400 font-medium transition">
+                    <span>🤖</span> <span>Agent Studio</span>
+                </a>
+                <a href="/marketplace/" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
+                    <span>📦</span> <span>Prompt Marketplace</span>
+                </a>
+            </nav>
+
+            <!-- Projects Section -->
+            <div>
+                <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-2 px-3">Active Applications</span>
+                <nav class="space-y-1 text-xs text-gray-400">
+                    <a href="/agent-studio/8f29d10a-422f-488b-8a8f-28721bf9012a/" class="block px-3 py-1.5 hover:text-white truncate">🔹 Support Copilot</a>
+                    <a href="/agent-studio/3b9a10f8-1122-4a09-9021-ff8910019283/" class="block px-3 py-1.5 hover:text-white truncate">🔹 GitHub PR Inspector</a>
+                    <a href="/agent-studio/5c1022e1-90aa-4331-8930-dd1019280191/" class="block px-3 py-1.5 hover:text-white truncate">🔹 B2B Lead Researcher</a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="space-y-2 border-t border-gray-800 pt-4 text-xs text-gray-400">
+            <div class="bg-indigo-950/60 border border-indigo-800/80 p-2.5 rounded-lg text-indigo-300 flex justify-between items-center">
+                <span>🎁 Free Credits</span>
+                <span class="font-bold text-white">$20.00</span>
+            </div>
+            <a href="/auth/" class="block px-2 py-1 text-red-400 hover:text-red-300">🚪 Sign Out</a>
+        </div>
+    </aside>
+
+    <!-- Main Viewport -->
+    <main class="flex-1 overflow-y-auto bg-gray-950 p-8">
+        {% block content %}{% endblock %}
+    </main>
+
+</body>
+</html>

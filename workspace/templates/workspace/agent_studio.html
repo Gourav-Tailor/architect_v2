@@ -1,0 +1,229 @@
+{% extends 'workspace/base.html' %}
+
+{% block title %}Agent Studio | {{ active_project.title }}{% endblock %}
+
+{% block content %}
+<div class="h-full flex flex-col -m-8">
+
+    <!-- Studio Header -->
+    <header class="border-b border-gray-800 px-6 py-3 flex justify-between items-center bg-gray-900">
+        <div class="flex items-center space-x-4">
+            <h1 class="font-bold text-base text-indigo-400">Agent Studio</h1>
+            <span class="text-xs text-gray-600">/</span>
+            <span class="text-xs font-semibold text-gray-200">{{ active_project.title }}</span>
+            <span class="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded-full">
+                Status: {{ active_project.status }}
+            </span>
+        </div>
+
+        <div class="flex space-x-3 text-xs">
+            <!-- View Mode Tabs -->
+            <div class="flex bg-gray-950 border border-gray-800 rounded-lg p-1">
+                <button id="tabVisual" onclick="switchStudioTab('visual')" class="bg-gray-800 text-white px-3 py-1 rounded font-medium">
+                    🕸️ Visual Node Builder
+                </button>
+                <button id="tabCode" onclick="switchStudioTab('code')" class="text-gray-400 hover:text-white px-3 py-1 rounded font-medium">
+                    💻 Python SDK / Code
+                </button>
+                <button id="tabLogs" onclick="switchStudioTab('logs')" class="text-gray-400 hover:text-white px-3 py-1 rounded font-medium">
+                    ⚡ Execution Logs
+                </button>
+            </div>
+
+            <button onclick="runExecutionTrace()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-1.5 rounded-lg font-semibold flex items-center space-x-1">
+                <span>⚡ Test Workflow</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Workspace Body -->
+    <div class="flex flex-1 overflow-hidden">
+
+        <!-- Left Drawer: Prompt Studio & Agent Settings -->
+        <aside class="w-80 border-r border-gray-800 p-4 flex flex-col bg-gray-900 flex-shrink-0">
+            <h2 class="font-bold text-xs uppercase tracking-wider text-gray-400 mb-2">Vibe-Coding Prompt Bar</h2>
+            
+            <div id="chatFeed" class="flex-1 bg-gray-950 rounded-lg p-3 mb-3 text-xs space-y-3 overflow-y-auto border border-gray-800">
+                {% for msg in messages %}
+                <div class="{% if msg.sender == 'USER' %}bg-indigo-950 border border-indigo-800{% else %}bg-gray-800{% endif %} p-2.5 rounded text-gray-300">
+                    <strong>{{ msg.sender }}:</strong> {{ msg.content }}
+                </div>
+                {% empty %}
+                <div class="text-gray-500 italic">Describe agent goals, tools, or changes to update this workflow...</div>
+                {% endfor %}
+            </div>
+
+            <div class="space-y-2">
+                <textarea id="promptInput" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2 text-xs text-gray-200 focus:outline-none focus:border-indigo-500" rows="3" placeholder="Add an agent that sends high severity tickets to PagerDuty..."></textarea>
+                <button onclick="sendPrompt()" class="w-full bg-indigo-600 hover:bg-indigo-500 py-2 rounded-lg font-medium text-xs">Update Workflow</button>
+            </div>
+        </aside>
+
+        <!-- Dynamic Studio Viewport -->
+        <main class="flex-1 bg-gray-950 relative overflow-hidden flex flex-col">
+
+            <!-- TAB 1: Visual Graph -->
+            <div id="viewVisual" class="w-full h-full p-6 relative">
+                <div class="absolute inset-0 bg-[radial-gradient(#1f2937_1px,transparent_1px)] [background-size:16px_16px] opacity-40"></div>
+
+                <div class="relative z-10 flex items-center justify-between h-full px-4">
+                    
+                    <!-- Start Node -->
+                    <div id="node-start" onclick="inspectNode('Start Node', 'System Entrypoint', 'Accepts incoming ticket payload and state parameters.')" class="w-52 bg-gray-900 border-2 border-emerald-500/80 rounded-xl p-4 shadow-xl cursor-pointer hover:scale-105 transition">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-[10px] font-bold text-emerald-400 uppercase">Input Payload</span>
+                            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                        </div>
+                        <h4 class="font-semibold text-sm text-gray-100">Start / Webhook</h4>
+                        <p class="text-[10px] text-gray-400 mt-1">Payload: <code class="text-gray-300">{ticket_id, text}</code></p>
+                    </div>
+
+                    <div class="text-gray-700 font-bold">➔</div>
+
+                    <!-- Configured Agents from Seed Data -->
+                    {% for agent in agents %}
+                    <div id="node-agent-{{ forloop.counter }}" onclick="inspectNode('{{ agent.name }}', '{{ agent.role }}', '{{ agent.goal }}')" class="w-56 bg-gray-900 border-2 border-gray-800 hover:border-indigo-500 rounded-xl p-4 shadow-xl cursor-pointer hover:scale-105 transition">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-[10px] font-bold text-indigo-400 uppercase">Agent Node {{ forloop.counter }}</span>
+                            <span class="text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-1.5 py-0.5 rounded">{{ active_project.framework }}</span>
+                        </div>
+                        <h4 class="font-semibold text-sm text-gray-100">{{ agent.name }}</h4>
+                        <p class="text-[10px] text-gray-400 mt-1 line-clamp-2">{{ agent.role }}</p>
+                    </div>
+                    {% if not forloop.last %}<div class="text-gray-700 font-bold">➔</div>{% endif %}
+                    {% empty %}
+                    <div class="text-gray-500 text-xs">No agent nodes configured yet. Prompt above to build.</div>
+                    {% endfor %}
+
+                </div>
+            </div>
+
+            <!-- TAB 2: Generated Code View -->
+            <div id="viewCode" class="hidden w-full h-full p-6">
+                <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 h-full flex flex-col">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-xs font-mono text-emerald-400">agent_pipeline.py</span>
+                        <button onclick="navigator.clipboard.writeText(document.getElementById('codeDisplay').innerText)" class="text-xs bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded text-gray-300 border border-gray-700">📋 Copy Code</button>
+                    </div>
+                    <pre id="codeDisplay" class="flex-1 bg-gray-950 p-4 rounded-lg font-mono text-xs text-gray-300 overflow-auto border border-gray-800">
+from lyzr import Agent, Task, LinearSyncPipeline
+
+# Project: {{ active_project.title }}
+# Framework: {{ active_project.framework }}
+
+{% for agent in agents %}
+agent_{{ forloop.counter }} = Agent(
+    role="{{ agent.role }}",
+    goal="{{ agent.goal }}",
+    tools={{ agent.tools }}
+)
+{% endfor %}
+
+pipeline = LinearSyncPipeline(
+    name="{{ active_project.title }}",
+    agents=[{% for agent in agents %}agent_{{ forloop.counter }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+)
+
+output = pipeline.run(input_payload={"user_query": "Support issue text..."})
+print(output)
+                    </pre>
+                </div>
+            </div>
+
+            <!-- TAB 3: Real-Time Execution Logs -->
+            <div id="viewLogs" class="hidden w-full h-full p-6">
+                <div id="logContainer" class="bg-gray-900 border border-gray-800 rounded-xl p-4 h-full font-mono text-xs text-gray-400 space-y-2 overflow-y-auto">
+                    <div class="text-emerald-400">[SYSTEM READY] Workflow initialized for {{ active_project.title }}</div>
+                    <div>[INFO] Active agents loaded: {{ agents|length }}</div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Right Drawer: Node Inspector Panel -->
+        <aside id="inspectorPanel" class="w-72 border-l border-gray-800 p-4 bg-gray-900 flex-shrink-0 flex flex-col justify-between">
+            <div>
+                <h3 class="font-bold text-xs uppercase tracking-wider text-gray-400 mb-3">Node Inspector</h3>
+                <div class="space-y-4 text-xs">
+                    <div>
+                        <label class="text-[10px] text-gray-500 uppercase block mb-1">Selected Node Name</label>
+                        <div id="inspectName" class="font-semibold text-indigo-300">Intent Classifier Router</div>
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-500 uppercase block mb-1">Role / Function</label>
+                        <div id="inspectRole" class="text-gray-300">System Orchestrator</div>
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-500 uppercase block mb-1">Agent Goal</label>
+                        <div id="inspectGoal" class="text-gray-400 bg-gray-950 p-2.5 rounded border border-gray-800">
+                            Classify incoming user query into billing, technical support, or human escalation.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 pt-3">
+                <span class="text-[10px] text-gray-500 uppercase block mb-1">Framework</span>
+                <span class="text-xs bg-indigo-950 text-indigo-300 px-2.5 py-1 rounded border border-indigo-800 block text-center font-semibold">
+                    {{ active_project.framework }}
+                </span>
+            </div>
+        </aside>
+
+    </div>
+</div>
+
+<script>
+    function switchStudioTab(tab) {
+        document.getElementById('viewVisual').classList.add('hidden');
+        document.getElementById('viewCode').classList.add('hidden');
+        document.getElementById('viewLogs').classList.add('hidden');
+
+        document.getElementById('tabVisual').className = "text-gray-400 hover:text-white px-3 py-1 rounded font-medium";
+        document.getElementById('tabCode').className = "text-gray-400 hover:text-white px-3 py-1 rounded font-medium";
+        document.getElementById('tabLogs').className = "text-gray-400 hover:text-white px-3 py-1 rounded font-medium";
+
+        if(tab === 'visual') {
+            document.getElementById('viewVisual').classList.remove('hidden');
+            document.getElementById('tabVisual').className = "bg-gray-800 text-white px-3 py-1 rounded font-medium";
+        } else if(tab === 'code') {
+            document.getElementById('viewCode').classList.remove('hidden');
+            document.getElementById('tabCode').className = "bg-gray-800 text-white px-3 py-1 rounded font-medium";
+        } else if(tab === 'logs') {
+            document.getElementById('viewLogs').classList.remove('hidden');
+            document.getElementById('tabLogs').className = "bg-gray-800 text-white px-3 py-1 rounded font-medium";
+        }
+    }
+
+    function inspectNode(name, role, goal) {
+        document.getElementById('inspectName').innerText = name;
+        document.getElementById('inspectRole').innerText = role;
+        document.getElementById('inspectGoal').innerText = goal;
+    }
+
+    function runExecutionTrace() {
+        switchStudioTab('logs');
+        const logs = document.getElementById('logContainer');
+        logs.innerHTML += `<div class="text-indigo-400 mt-2">[EXECUTION START] Triggering workflow test sequence...</div>`;
+        
+        setTimeout(() => {
+            logs.innerHTML += `<div class="text-gray-300">[1/2] Intent Classifier evaluated input ➔ Matched route: TECHNICAL_SUPPORT</div>`;
+        }, 800);
+
+        setTimeout(() => {
+            logs.innerHTML += `<div class="text-emerald-400 font-bold">[2/2] Knowledge Base Retriever returned 3 grounded documents. Execution Success!</div>`;
+        }, 1600);
+    }
+
+    function sendPrompt() {
+        const val = document.getElementById('promptInput').value;
+        if(!val) return;
+        const feed = document.getElementById('chatFeed');
+        feed.innerHTML += `<div class="bg-indigo-950 border border-indigo-800 p-2.5 rounded text-gray-300"><strong>USER:</strong> ${val}</div>`;
+        document.getElementById('promptInput').value = '';
+        setTimeout(() => {
+            feed.innerHTML += `<div class="bg-gray-800 p-2.5 rounded text-gray-300"><strong>AGENT:</strong> Updated workflow graph to incorporate prompt requirement.</div>`;
+        }, 600);
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,264 @@
+{% extends 'workspace/base.html' %}
+
+{% block title %}App & Agent Studio | Architect 2.0{% endblock %}
+
+{% block content %}
+<div class="h-full flex flex-col -m-8">
+
+    <!-- Top Workspace Toolbar -->
+    <header class="border-b border-gray-800 px-6 py-3 flex justify-between items-center bg-gray-900">
+        <div class="flex items-center space-x-3">
+            <h1 class="font-bold text-lg text-indigo-400">Architect Studio</h1>
+            <span class="text-xs bg-indigo-950 text-indigo-300 border border-indigo-800 px-2.5 py-0.5 rounded-full font-medium">
+                Workflow ID: <code class="text-indigo-200">wf_8f29d10a</code>
+            </span>
+        </div>
+
+        <div class="flex space-x-3 text-xs">
+            <!-- View Mode Switcher -->
+            <div class="flex bg-gray-950 border border-gray-800 rounded-lg p-1">
+                <button id="btnVisual" onclick="switchView('visual')" class="bg-gray-800 text-white px-3 py-1 rounded font-medium transition">
+                    🕸️ Visual Graph & Node Studio
+                </button>
+                <button id="btnWidget" onclick="switchView('widget')" class="text-gray-400 hover:text-white px-3 py-1 rounded font-medium transition">
+                    🎨 Widget Output Studio
+                </button>
+                <button id="btnCode" onclick="switchView('code')" class="text-gray-400 hover:text-white px-3 py-1 rounded font-medium transition">
+                    💻 SDK & Code Export
+                </button>
+            </div>
+
+            <button onclick="openModal('evalModal')" class="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg border border-gray-700 text-gray-200 font-medium">
+                🧪 Run Evals
+            </button>
+            <button onclick="openModal('deployModal')" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-1.5 rounded-lg text-white font-semibold">
+                🚀 Publish & Deploy
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <div class="flex flex-1 overflow-hidden">
+
+        <!-- Left Drawer: Prompting & Real-Time Test Runner -->
+        <aside class="w-80 border-r border-gray-800 p-4 flex flex-col bg-gray-900 flex-shrink-0">
+            <h2 class="font-semibold text-xs uppercase tracking-wider text-gray-400 mb-2">Interactive Test Runner</h2>
+            <p class="text-xs text-gray-500 mb-3">Test workflow prompts and trace execution through nodes in real time.</p>
+
+            <div id="traceLog" class="flex-1 bg-gray-950 rounded-lg p-3 mb-3 text-xs space-y-2.5 overflow-y-auto border border-gray-800">
+                <div class="text-gray-500 italic">Ready to execute workflow. Type a prompt below...</div>
+            </div>
+
+            <div class="space-y-2">
+                <textarea id="promptInput" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-2.5 text-xs text-gray-200 focus:outline-none focus:border-indigo-500" rows="3" placeholder="e.g. Find me flights from SFO to Tokyo on Oct 7..."></textarea>
+                <button onclick="runWorkflowTrace()" class="w-full bg-indigo-600 hover:bg-indigo-500 py-2 rounded-lg font-medium text-xs transition flex justify-center items-center space-x-1">
+                    <span>⚡ Run Execution Trace</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Right Panel: Dynamic Canvas Viewports -->
+        <main class="flex-1 bg-gray-950 p-6 overflow-auto relative">
+
+            <!-- VIEW 1: OpenAI-style Visual Graph Builder -->
+            <div id="visualCanvas" class="w-full h-full relative min-h-[500px]">
+                <div class="absolute inset-0 bg-[radial-gradient(#1f2937_1px,transparent_1px)] [background-size:16px_16px] opacity-40"></div>
+                
+                <div class="relative z-10 flex items-center justify-between space-x-6 h-full px-4">
+                    <!-- Node 1: Start Node -->
+                    <div id="node-start" class="w-52 bg-gray-900 border-2 border-gray-800 rounded-xl p-4 shadow-lg transition-all duration-300">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold text-gray-400 uppercase">Input Node</span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                        </div>
+                        <h4 class="font-semibold text-sm text-gray-200">Start / State</h4>
+                        <p class="text-[10px] text-gray-500 mt-1">Accepts user prompt variables</p>
+                    </div>
+
+                    <div class="text-gray-700 text-lg font-bold">➔</div>
+
+                    <!-- Node 2: Classifier Agent -->
+                    <div id="node-classifier" class="w-56 bg-gray-900 border-2 border-gray-800 rounded-xl p-4 shadow-lg transition-all duration-300">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold text-indigo-400 uppercase">Classifier Agent</span>
+                            <span class="text-[10px] bg-indigo-950 text-indigo-300 px-1.5 py-0.5 rounded border border-indigo-800">LLM Router</span>
+                        </div>
+                        <h4 class="font-semibold text-sm text-gray-200">Intent Classifier</h4>
+                        <p class="text-[10px] text-gray-400 mt-1">Routes: <code class="text-amber-300">flight_info</code> | <code class="text-blue-300">itinerary</code></p>
+                    </div>
+
+                    <div class="text-gray-700 text-lg font-bold">➔</div>
+
+                    <!-- Node 3: If/Else Branching -->
+                    <div id="node-ifelse" class="w-52 bg-gray-900 border-2 border-gray-800 rounded-xl p-4 shadow-lg transition-all duration-300">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold text-amber-400 uppercase">If / Else Branch</span>
+                            <span class="text-[10px] bg-amber-950 text-amber-300 px-1.5 py-0.5 rounded border border-amber-800">Logic</span>
+                        </div>
+                        <h4 class="font-semibold text-sm text-gray-200">Classification Branch</h4>
+                        <p class="text-[10px] text-gray-400 mt-1">If type == flight_info</p>
+                    </div>
+
+                    <div class="text-gray-700 text-lg font-bold">➔</div>
+
+                    <!-- Node 4: Worker Agents -->
+                    <div class="flex flex-col space-y-4">
+                        <div id="node-flight" class="w-56 bg-gray-900 border-2 border-gray-800 rounded-xl p-4 shadow-lg transition-all duration-300">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-xs font-bold text-emerald-400 uppercase">Flight Agent</span>
+                                <span class="text-[10px] bg-emerald-950 text-emerald-300 px-1.5 py-0.5 rounded">Web Search</span>
+                            </div>
+                            <h4 class="font-semibold text-sm text-gray-200">Flight Search Specialist</h4>
+                            <p class="text-[10px] text-gray-400 mt-1">Outputs: Flight Widget UI</p>
+                        </div>
+
+                        <div id="node-itinerary" class="w-56 bg-gray-900 border-2 border-gray-800 rounded-xl p-4 shadow-lg opacity-50 transition-all duration-300">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-xs font-bold text-blue-400 uppercase">Itinerary Agent</span>
+                                <span class="text-[10px] bg-blue-950 text-blue-300 px-1.5 py-0.5 rounded">Planner</span>
+                            </div>
+                            <h4 class="font-semibold text-sm text-gray-200">Itinerary Planner</h4>
+                            <p class="text-[10px] text-gray-400 mt-1">Outputs: Markdown Schedule</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 2: Custom Widget Studio -->
+            <div id="widgetCanvas" class="hidden w-full h-full flex flex-col items-center justify-center">
+                <div class="max-w-md w-full bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-2xl space-y-4">
+                    <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+                        <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Flight Widget Output Component</span>
+                        <span class="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded">Rendered UI</span>
+                    </div>
+                    <div class="bg-gradient-to-r from-amber-600 to-amber-700 p-5 rounded-xl text-white space-y-3">
+                        <div class="flex justify-between items-center text-xs opacity-90">
+                            <span>SFO ➔ NRT (Tokyo)</span>
+                            <span>Direct Flight</span>
+                        </div>
+                        <div class="text-2xl font-bold">$1,240 USD</div>
+                        <div class="text-xs opacity-80">Departs: 10:45 AM PDT | Arrives: 2:15 PM JST (+1)</div>
+                    </div>
+                    <p class="text-xs text-gray-400 text-center">Interactive UI template populated directly by the Flight Agent output.</p>
+                </div>
+            </div>
+
+            <!-- VIEW 3: SDK & Code Export Studio -->
+            <div id="codeCanvas" class="hidden w-full h-full flex flex-col">
+                <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 flex-1 flex flex-col">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-xs font-mono text-indigo-400">workflow_export.py</span>
+                        <button onclick="navigator.clipboard.writeText(document.getElementById('codeBlock').innerText)" class="text-xs bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded text-gray-300 border border-gray-700">📋 Copy Code</button>
+                    </div>
+                    <pre class="flex-1 bg-gray-950 p-4 rounded-lg font-mono text-xs text-emerald-400 overflow-auto border border-gray-800" id="codeBlock">
+# Exported from Architect 2.0 Agent Builder Studio
+from lyzr import AgentWorkflow, RouterNode, AgentNode
+
+workflow = AgentWorkflow(id="wf_8f29d10a")
+
+classifier = RouterNode(
+    name="IntentClassifier",
+    prompt="Classify whether message is flight_info or itinerary",
+    output_schema={"classification": ["flight_info", "itinerary"]}
+)
+
+flight_agent = AgentNode(
+    name="FlightAgent",
+    tools=["web_search"],
+    widget_output="FlightWidgetCard"
+)
+
+workflow.connect(start_node="Start", target=classifier)
+workflow.branch(classifier, condition="flight_info", target=flight_agent)
+
+# Deploy directly using Workflow ID
+response = workflow.run(input_prompt="Find flights from SFO to Tokyo")
+print(response.widget_data)
+                    </pre>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<!-- Modal: Evals -->
+<div id="evalModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 max-w-lg w-full space-y-4">
+        <h3 class="text-lg font-bold text-white">Agent Evaluation Suite</h3>
+        <p class="text-xs text-gray-400">Run automated benchmarks on accuracy, response latency, and JSON schema compliance.</p>
+        <div class="bg-gray-950 p-4 rounded-lg text-xs space-y-2 border border-gray-800">
+            <div class="flex justify-between"><span>Intent Classification Accuracy:</span> <span class="text-emerald-400 font-bold">98.4%</span></div>
+            <div class="flex justify-between"><span>Avg Node Execution Latency:</span> <span class="text-indigo-400 font-bold">420ms</span></div>
+            <div class="flex justify-between"><span>Widget Schema Validation:</span> <span class="text-emerald-400 font-bold">Passed (10/10)</span></div>
+        </div>
+        <button onclick="closeModal('evalModal')" class="w-full bg-gray-800 hover:bg-gray-700 py-2 rounded-lg text-xs text-gray-200 border border-gray-700">Close Eval Suite</button>
+    </div>
+</div>
+
+<!-- Modal: Deployment -->
+<div id="deployModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 max-w-lg w-full space-y-4">
+        <h3 class="text-lg font-bold text-white">Publish & Deploy Workflow</h3>
+        <p class="text-xs text-gray-400">Embed this agentic workflow into your production backend using your unique Workflow ID.</p>
+        <div class="bg-gray-950 p-3 rounded-lg border border-gray-800 text-xs text-indigo-300 font-mono">
+            workflow_id = "wf_8f29d10a"
+        </div>
+        <button onclick="closeModal('deployModal')" class="w-full bg-indigo-600 hover:bg-indigo-500 py-2 rounded-lg text-xs font-semibold text-white">Done</button>
+    </div>
+</div>
+
+<script>
+    function switchView(mode) {
+        document.getElementById('visualCanvas').classList.add('hidden');
+        document.getElementById('widgetCanvas').classList.add('hidden');
+        document.getElementById('codeCanvas').classList.add('hidden');
+
+        document.getElementById('btnVisual').className = "text-gray-400 hover:text-white px-3 py-1 rounded font-medium transition";
+        document.getElementById('btnWidget').className = "text-gray-400 hover:text-white px-3 py-1 rounded font-medium transition";
+        document.getElementById('btnCode').className = "text-gray-400 hover:text-white px-3 py-1 rounded font-medium transition";
+
+        if (mode === 'visual') {
+            document.getElementById('visualCanvas').classList.remove('hidden');
+            document.getElementById('btnVisual').className = "bg-gray-800 text-white px-3 py-1 rounded font-medium transition";
+        } else if (mode === 'widget') {
+            document.getElementById('widgetCanvas').classList.remove('hidden');
+            document.getElementById('btnWidget').className = "bg-gray-800 text-white px-3 py-1 rounded font-medium transition";
+        } else if (mode === 'code') {
+            document.getElementById('codeCanvas').classList.remove('hidden');
+            document.getElementById('btnCode').className = "bg-gray-800 text-white px-3 py-1 rounded font-medium transition";
+        }
+    }
+
+    function runWorkflowTrace() {
+        const input = document.getElementById('promptInput').value || "Find flights from SFO to Tokyo";
+        const traceLog = document.getElementById('traceLog');
+        
+        traceLog.innerHTML = `<div class="text-indigo-400"><strong>[Start Node]</strong> Received: "${input}"</div>`;
+        
+        // Reset node highlights
+        document.querySelectorAll('[id^="node-"]').forEach(el => el.classList.remove('border-indigo-500', 'border-emerald-500', 'shadow-indigo-500/50'));
+
+        // Step 1: Highlight Start
+        document.getElementById('node-start').classList.add('border-emerald-500');
+
+        setTimeout(() => {
+            traceLog.innerHTML += `<div class="text-indigo-300"><strong>[Classifier]</strong> Classifying intent ➔ 'flight_info'</div>`;
+            document.getElementById('node-classifier').classList.add('border-indigo-500');
+        }, 800);
+
+        setTimeout(() => {
+            traceLog.innerHTML += `<div class="text-amber-300"><strong>[If/Else Logic]</strong> Branch matching: flight_info</div>`;
+            document.getElementById('node-ifelse').classList.add('border-indigo-500');
+        }, 1600);
+
+        setTimeout(() => {
+            traceLog.innerHTML += `<div class="text-emerald-400 font-semibold"><strong>[Flight Agent]</strong> Executed Web Search. Rendered Flight Widget Output!</div>`;
+            document.getElementById('node-flight').classList.add('border-emerald-500', 'shadow-indigo-500/50');
+        }, 2400);
+    }
+
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+</script>
+{% endblock %}

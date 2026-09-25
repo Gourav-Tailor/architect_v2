@@ -1,0 +1,62 @@
+{% extends 'workspace/base.html' %}
+
+{% block title %}Agent Studio | Architect 2.0{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6">
+
+    <!-- Header -->
+    <div class="flex justify-between items-center border-b border-gray-800 pb-4">
+        <div>
+            <h1 class="text-2xl font-bold text-white">Agent Studio</h1>
+            <p class="text-gray-400 text-xs mt-1">Design multi-agent systems in LangChain, CrewAI, AutoGen, or Lyzr Core.</p>
+        </div>
+        <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-semibold">
+            + Create New Agent
+        </button>
+    </div>
+
+    <!-- Agent Node Cards Grid -->
+    <div class="grid grid-cols-3 gap-6">
+        <!-- Agent Card 1 -->
+        <div class="bg-gray-900 border border-gray-800 p-5 rounded-xl space-y-3 hover:border-gray-700 transition">
+            <div class="flex justify-between items-center">
+                <h3 class="font-semibold text-indigo-400 text-sm">Manager / Orchestrator Agent</h3>
+                <span class="text-xs bg-indigo-950 text-indigo-300 px-2 py-0.5 rounded border border-indigo-800">Lyzr Core</span>
+            </div>
+            <p class="text-xs text-gray-400">Delegates incoming user queries and coordinates worker pipelines.</p>
+            <div class="pt-2 border-t border-gray-800 flex justify-between items-center text-xs">
+                <span class="text-gray-500">Tools: 3 Active</span>
+                <button class="bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded text-gray-300 border border-gray-700">Configure Node</button>
+            </div>
+        </div>
+
+        <!-- Agent Card 2 -->
+        <div class="bg-gray-900 border border-gray-800 p-5 rounded-xl space-y-3 hover:border-gray-700 transition">
+            <div class="flex justify-between items-center">
+                <h3 class="font-semibold text-indigo-400 text-sm">Code Generator Agent</h3>
+                <span class="text-xs bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded border border-emerald-800">LangChain</span>
+            </div>
+            <p class="text-xs text-gray-400">Generates Django models, Serializers, and REST viewsets automatically.</p>
+            <div class="pt-2 border-t border-gray-800 flex justify-between items-center text-xs">
+                <span class="text-gray-500">Tools: Code Evaluator</span>
+                <button class="bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded text-gray-300 border border-gray-700">Configure Node</button>
+            </div>
+        </div>
+
+        <!-- Agent Card 3 -->
+        <div class="bg-gray-900 border border-gray-800 p-5 rounded-xl space-y-3 hover:border-gray-700 transition">
+            <div class="flex justify-between items-center">
+                <h3 class="font-semibold text-indigo-400 text-sm">GitHub PR Inspector</h3>
+                <span class="text-xs bg-amber-950 text-amber-300 px-2 py-0.5 rounded border border-amber-800">CrewAI</span>
+            </div>
+            <p class="text-xs text-gray-400">Inspects pull requests, checks git diffs, and provides automated reviews.</p>
+            <div class="pt-2 border-t border-gray-800 flex justify-between items-center text-xs">
+                <span class="text-gray-500">Tools: GitHub API</span>
+                <button class="bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded text-gray-300 border border-gray-700">Configure Node</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

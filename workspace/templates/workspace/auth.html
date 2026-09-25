@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Architect 2.0 - Sign In</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-gray-100 flex items-center justify-center h-screen">
+    <div class="bg-gray-900 border border-gray-800 p-8 rounded-xl max-w-md w-full">
+        <h1 class="text-2xl font-bold text-indigo-400 mb-1 text-center">Architect 2.0</h1>
+        <p class="text-xs text-gray-400 text-center mb-6">The Agent Builder Platform for Executives & Developers</p>
+
+        <form method="POST" action="/auth/" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="text-xs text-gray-400 mb-1 block">Email (Pre-filled for testing)</label>
+                <input type="email" name="email" value="executive.dev@architect.demo" class="w-full bg-gray-950 border border-gray-700 rounded p-2 text-sm text-gray-200 focus:outline-none focus:border-indigo-500">
+            </div>
+
+            <div>
+                <label class="text-xs text-gray-400 mb-1 block">Persona View</label>
+                <select name="role" class="w-full bg-gray-950 border border-gray-700 rounded p-2 text-sm text-gray-200">
+                    <option value="Executive">👔 Business Executive (Visual Builder View)</option>
+                    <option value="Developer">💻 Technical Developer (Code & Terminal View)</option>
+                </select>
+            </div>
+
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 py-2.5 rounded font-medium text-sm transition">
+                Continue with Google (Auto-Sign In)
+            </button>
+            <button type="submit" class="w-full bg-gray-800 hover:bg-gray-700 border border-gray-700 py-2.5 rounded font-medium text-sm transition">
+                Continue with Email
+            </button>
+        </form>
+    </div>
+</body>
+</html>
