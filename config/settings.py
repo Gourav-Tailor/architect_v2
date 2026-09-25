@@ -11,10 +11,21 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/static/'
+
+# STATIC_ROOT is where collectstatic will gather static files for production
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Optional: If you have a custom static folder in your project directory
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
@@ -27,6 +38,14 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+STORAGES = {
+    "default": {
+        "ENGINE": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "ENGINE": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # Application definition
 
@@ -45,6 +64,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # <--- Add this line
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -116,8 +136,6 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
-
-STATIC_URL = "static/"
 
 
 # Email
