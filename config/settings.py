@@ -36,8 +36,12 @@ SECRET_KEY = "django-insecure-jyap+*zpx**l6*hla*^!b7nb_-r0+v4@ok^8z7dq20lfjx0e^j
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = [
+    'architect-v2-cz0r.onrender.com',
+    '.onrender.com',
+    '127.0.0.1',
+    'localhost',
+]
 # config/settings.py
 
 STORAGES = {
