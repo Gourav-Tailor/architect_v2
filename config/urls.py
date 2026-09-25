@@ -10,12 +10,12 @@ urlpatterns = [
     path('', views.index_view, name='home'),
     path('auth/', views.auth_view, name='auth'),
     
-    # Agent Studio Routes
+    # Primary Agent Studio Routes
     path('agent-studio/', views.agent_studio_view, name='agent_studio'),
     path('agent-studio/<str:project_id>/', views.agent_studio_view, name='agent_studio_project'),
 
-    # Redirect /studio/ to /agent-studio/
-    path('studio/', RedirectView.as_python_redirect('/agent-studio/')),
+    # Redirect /studio/ to /agent-studio/ (FIXED HERE)
+    path('studio/', RedirectView.as_view(url='/agent-studio/', permanent=False)),
     path('studio/<str:project_id>/', views.agent_studio_view),
 
     # Marketplace & Admin
