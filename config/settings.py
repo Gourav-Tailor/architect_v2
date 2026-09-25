@@ -38,12 +38,14 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# config/settings.py
+
 STORAGES = {
     "default": {
-        "ENGINE": "django.core.files.storage.FileSystemStorage",
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "ENGINE": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
 
